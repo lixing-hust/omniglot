@@ -13,7 +13,10 @@ import random
 
 
 def data_generator(N,s,q,dir):
-    random_nums=[],task=[],spt_set=[],qry_set=[]
+    random_nums=[]
+    task=[]
+    spt_set=[]
+    qry_set=[]
     while len(random_nums)<N:
         a=random.randint(1,659)
         if a not in random_nums:

@@ -17,7 +17,7 @@ BATCH_SIZE=[1,2,5,10,15,25]
 EPOCHS=40 # 总共训练批次
 LEARNING_RATE=[0.1,0.05,0.02,0.01,0.005,0.002,0.001]
 x_epoch=[5,10,15,20,25,30,35,40]
-Accuracy=[]
+
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu") # 让torch判断是否使用GPU，建议使用GPU环境，因为会快很多
 
 
@@ -100,27 +100,68 @@ def test(model, device, test_loader):
 
 
 
+def epoch_acc(EPOCHS):
 
+    train_dl = DataLoader(train_ds, batch_size=5, shuffle=True, num_workers=0)
+    test_dl = DataLoader(test_ds, batch_size=5, shuffle=True, num_workers=0)
+    Accuracy = []
+    model = ConvNet().to(DEVICE)
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
 
-train_dl = DataLoader(train_ds, batch_size=5, shuffle=True, num_workers=0)
-test_dl = DataLoader(test_ds, batch_size=5, shuffle=True, num_workers=0)
+    for epoch in range(1, EPOCHS + 1):
+        train(model, DEVICE, train_dl, optimizer, epoch)
+        accuracy = test(model, DEVICE, test_dl)
+        if((epoch+1)%5==0):
+            Accuracy.append(accuracy)
 
-model = ConvNet().to(DEVICE)
-optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+    plt.plot(x_epoch,Accuracy,'bo--',alpha=0.5,linewidth=1,label='epochs')
+    plt.legend()
+    plt.xlabel('epochs')
+    plt.ylabel('accuracy')
+    plt.show()
 
-for epoch in range(1, EPOCHS + 1):
-    train(model, DEVICE, train_dl, optimizer, epoch)
-    accuracy = test(model, DEVICE, test_dl)
-    if((epoch+1)%5==0):
-        Accuracy.append(accuracy)
+def lr_acc(LEARNING_RATE):
+    train_dl = DataLoader(train_ds, batch_size=5, shuffle=True, num_workers=0)
+    test_dl = DataLoader(test_ds, batch_size=5, shuffle=True, num_workers=0)
+    Accuracy = []
+    x_aixs=LEARNING_RATE
 
+    for lr in LEARNING_RATE:
+        model = ConvNet().to(DEVICE)
+        optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9)
+        for epoch in range(1, 20 + 1):
+            train(model, DEVICE, train_dl, optimizer, epoch)
+            accuracy = test(model, DEVICE, test_dl)
+            if ((epoch + 1) % 20 == 0):
+                Accuracy.append(accuracy)
+    plt.plot(x_aixs, Accuracy, 'bo--', alpha=0.5, linewidth=1, label='learning_rata')
+    plt.legend()
+    plt.xlabel('learning_rata')
+    plt.ylabel('accuracy')
+    plt.show()
 
+def batchSize_acc(BATCH_SIZE):
 
+    Accuracy = []
+    x_aixs=BATCH_SIZE
 
+    for bs in BATCH_SIZE:
 
-plt.plot(x_epoch,Accuracy,'bo--',alpha=0.5,linewidth=1,label='epochs')
-plt.legend()
-plt.xlabel('epochs')
-plt.ylabel('accuracy')
+        train_dl = DataLoader(train_ds, batch_size=bs, shuffle=True, num_workers=0)
+        test_dl = DataLoader(test_ds, batch_size=bs, shuffle=True, num_workers=0)
+        model = ConvNet().to(DEVICE)
+        optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+        for epoch in range(1, 20 + 1):
+            train(model, DEVICE, train_dl, optimizer, epoch)
+            accuracy = test(model, DEVICE, test_dl)
+            if ((epoch + 1) % 20 == 0):
+                Accuracy.append(accuracy)
+    plt.plot(x_aixs, Accuracy, 'bo--', alpha=0.5, linewidth=1, label='batch_size')
+    plt.legend()
+    plt.xlabel('batch_size')
+    plt.ylabel('accuracy')
+    plt.show()
 
-plt.show()
+# batchSize_acc(BATCH_SIZE)
+# lr_acc(LEARNING_RATE)
+epoch_acc(40)
