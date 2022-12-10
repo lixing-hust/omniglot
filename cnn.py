@@ -63,7 +63,7 @@ class ConvNet(nn.Module):
         out = self.fc1(out) # batch*2000 -> batch*500
         out = F.relu(out) # batch*500
         out = self.fc2(out) # batch*500 -> batch*10
-        out = F.log_softmax(out, dim=1) # 计算log(softmax(x))
+        out = F.log_softmax(out,dim=1) # 计算log(softmax(x))
         return out
 
 def train(model, device, train_loader, optimizer, epoch):
@@ -72,7 +72,7 @@ def train(model, device, train_loader, optimizer, epoch):
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
         output = model(data)
-        loss = F.nll_loss(output, target)
+        loss = F.cross_entropy(output, target)
         loss.backward()
         optimizer.step()
         # if(batch_idx+1)%2 == 0:
@@ -88,8 +88,12 @@ def test(model, device, test_loader):
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
             output = model(data)
-            test_loss += F.nll_loss(output, target, reduction='sum').item() # 将一批的损失相加
+            #print(output.size(),target.size())
+            test_loss += F.cross_entropy(output, target, reduction='sum').item() # 将一批的损失相加
             pred = output.max(1, keepdim=True)[1] # 找到概率最大的下标
+            target=target.max(1,keepdim=True)[1]
+
+            #correct+=(pred==target.max(1,keepdim=True)[1])
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader.dataset)
@@ -146,7 +150,6 @@ def batchSize_acc(BATCH_SIZE):
     x_aixs=BATCH_SIZE
 
     for bs in BATCH_SIZE:
-
         train_dl = DataLoader(train_ds, batch_size=bs, shuffle=True, num_workers=0)
         test_dl = DataLoader(test_ds, batch_size=bs, shuffle=True, num_workers=0)
         model = ConvNet().to(DEVICE)

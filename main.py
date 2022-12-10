@@ -2,6 +2,7 @@ from PIL import Image
 import numpy as np
 import os
 import random
+import torch
 # img_PIL = Image.open('images_evaluation/images_evaluation/Angelic/character01/0965_01.png')
 # print(img_PIL)
 
@@ -64,12 +65,15 @@ def data_init(N,s,q):
     new_test_data=[]
 
     for i in range(len(train_data)):
+        label=[0.,0.,0.,0.,0.]
+        label=torch.tensor(label)
         a=[]
         b=[]
         a.append(train_data[i])
         b.append(test_data[i])
-        a.append(i//5)
-        b.append(i//5)
+        label[i//5]=1.
+        a.append(label)#label改成向量形式
+        b.append(label)
         new_train_data.append(a)
         new_test_data.append(b)
 
